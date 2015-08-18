@@ -75,14 +75,15 @@ public class RumbaOperation {
             public int WD_DisconnectPS(long hInstance);
         }
     public static final EhlApi32 EhlApi32 = (EhlApi32) Native.loadLibrary("EhlApi32", EhlApi32.class);   
-    
+    public int rumbaInstance;
 
-    public RumbaOperation(){
-    	 EhlApi32.WD_ConnectPS(1, "A");
+    public RumbaOperation(int instanceno, String instanceVal){
+    	rumbaInstance=instanceno;
+    	 EhlApi32.WD_ConnectPS(rumbaInstance, instanceVal);
     }
     
     public void RumbaOperationClose(){
-   	 EhlApi32.WD_DisconnectPS(1);
+   	 EhlApi32.WD_DisconnectPS(rumbaInstance);
    }
 // ===============================================================
 
@@ -150,7 +151,7 @@ public class RumbaOperation {
 //    	   
 //    	   {
 //    		   (nLoctionTest = nCursorLocation) Or DateDiff("s", dteStart, Now()) > nSeconds;
-    	       nReturnValue = EhlApi32.WD_QueryCursorLocation(1, nCursorLocation);
+    	       nReturnValue = EhlApi32.WD_QueryCursorLocation(rumbaInstance, nCursorLocation);
 //    	   }
 //    	   loop
 
@@ -187,7 +188,7 @@ public class RumbaOperation {
         int pos=0;
         int intResult;
         pos = (nScreenRow-1)*80+ nScreenColumn;
-    	intResult= EhlApi32.WD_CopyPSToString(1, pos, buffer, nLength);
+    	intResult= EhlApi32.WD_CopyPSToString(rumbaInstance, pos, buffer, nLength);
     	if (intResult==0){
     		for (int i = 0; i< buffer.length;i++){
             	strBuffer=strBuffer + (char)buffer[i];
@@ -199,7 +200,32 @@ public class RumbaOperation {
     	}
     }
     
+    /* ===============================================================
+
+    Function : WriteOnScreen
+
+   ---------------------------------------------------------------
+
+    Purpose :Write on screen for text based on row, column, length*/
     
+    public boolean WriteOnScreen(int nScreenRow , int nScreenColumn,String strValue) {
+    	int pos=(nScreenRow-1)*80+ nScreenColumn;
+    	int intResult= EhlApi32.WD_CopyStringToField(rumbaInstance,pos,strValue);
+    	if (intResult==0){
+    		return true;
+    	}
+    	else{
+    		System.out.println("Error while writing on screen : " + intResult);
+    		
+    		/*  0  The function was successful  
+    	       1  An incorrect PSID was specified  
+    	       8  No prior call to Start Communication Notification (80) function was called for the PSID  
+    	       9  A system error was encountered  
+    	   */
+    		
+    		return false;
+    	}
+    }
     
 
 }

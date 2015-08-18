@@ -6,17 +6,15 @@ public class main {
 	 */
 
     public static void main(String[] args) throws InterruptedException {
-        RumbaOperation rn = new RumbaOperation();
+        RumbaOperation rn = new RumbaOperation(1,"A");
         System.out.println(rn.ReadFromScreen(10, 1, 27));
         
-        
+        RumbaOperation rn2 = new RumbaOperation(1,"B");
+        System.out.println(rn.ReadFromScreen(10, 6, 4));
         
         rn.RumbaOperationClose();
+        rn2.RumbaOperationClose();
     }
-   /*  0  The function was successful  
-       1  An incorrect PSID was specified  
-       8  No prior call to Start Communication Notification (80) function was called for the PSID  
-       9  A system error was encountered  
-   */
+   
 
 }
