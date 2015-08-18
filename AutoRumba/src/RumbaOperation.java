@@ -39,12 +39,14 @@ public class RumbaOperation {
             public int WD_CopyStringToPS (int hInstance, int Position, String Buffer, int Length);
             public int WD_DeletePS (int hInstance, String ShortName);
             public int WD_DisconnectPS (int hInstance);
+            public int WD_DisconnectPS(long hInstance);
             public int WD_DisplayCursor (int hInstance, int Position, String ShortName);
             public int WD_DisplayPS (int hInstance, String ShortName);
             public int WD_FindFieldLength(int hInstance, Long Length, int Position, String FindData);
             public int WD_FindFieldPosition (int hInstance, int Location, int Position, String FindData);
             public int WD_GetKey(int hInstance, String GetKeyData);
             public int WD_GetSessionHWND(int hInstance);
+            
             public int WD_Pause(int hInstance, int Length);
             public int WD_PostInterceptStatus(int hInstance, String ShortName);
             public int WD_QueryCursorLocation(int hInstance, int Location);
@@ -72,14 +74,17 @@ public class RumbaOperation {
             public int WD_StopHostNotification (int hInstance, String ShortName);
             public int WD_StopKeystrokeIntercept (int hInstance , String ShortName);
             public int WD_Wait (int hInstance);       
-            public int WD_DisconnectPS(long hInstance);
+            
         }
-    public static final EhlApi32 EhlApi32 = (EhlApi32) Native.loadLibrary("EhlApi32", EhlApi32.class);   
+    public static final EhlApi32 EhlApi32 = (EhlApi32) Native.loadLibrary("EhlApi32", EhlApi32.class); 
+    
+
     public int rumbaInstance;
 
     public RumbaOperation(int instanceno, String instanceVal){
+    	
     	rumbaInstance=instanceno;
-    	 EhlApi32.WD_ConnectPS(rumbaInstance, instanceVal);
+    	EhlApi32.WD_ConnectPS(rumbaInstance, instanceVal);
     }
     
     public void RumbaOperationClose(){
@@ -185,6 +190,7 @@ public class RumbaOperation {
     public String ReadFromScreen(int nLength, int nScreenRow , int nScreenColumn) {
     	byte[] buffer= new byte[nLength];
         String strBuffer="";
+        String result="";
         int pos=0;
         int intResult;
         pos = (nScreenRow-1)*80+ nScreenColumn;
@@ -193,11 +199,14 @@ public class RumbaOperation {
     		for (int i = 0; i< buffer.length;i++){
             	strBuffer=strBuffer + (char)buffer[i];
             }
-    		return strBuffer;
+    		
+    		result= strBuffer;
     	}
     	else{
-    		return "";
+    		result= "";
     	}
+    	System.out.println("Read From Screen : " + result);
+    	return result;
     }
     
     /* ===============================================================
@@ -208,9 +217,11 @@ public class RumbaOperation {
 
     Purpose :Write on screen for text based on row, column, length*/
     
-    public boolean WriteOnScreen(int nScreenRow , int nScreenColumn,String strValue) {
+    public boolean WriteOnScreen(int nScreenRow , int nScreenColumn,String strValue) throws InterruptedException {
     	int pos=(nScreenRow-1)*80+ nScreenColumn;
     	int intResult= EhlApi32.WD_CopyStringToField(rumbaInstance,pos,strValue);
+    	System.out.println("Write on screen: " + strValue + " at " + nScreenRow +","+ nScreenColumn +". Status : "    + intResult);
+    	Thread.sleep(1000);
     	if (intResult==0){
     		return true;
     	}
@@ -228,4 +239,120 @@ public class RumbaOperation {
     }
     
 
+    
+    /* ==================================================================
+     * Function : GetHWNDId
+     * 
+     * --------------------------------------------------
+     * Purpose : Get WindowHandler of the opened Rumba instance
+     */
+    
+    public int GetWindowHandlerId(){
+    	return EhlApi32.WD_GetSessionHWND(this.rumbaInstance);
+    }
+     
+    
+    
+    
+    /* ==================================================================
+     * Function : SendKey
+     * 
+     * --------------------------------------------------
+     * Purpose : SendKey to the opened Rumba instance
+     * 
+     */
+    public int SendKey(String keydata) throws InterruptedException{
+    	 EhlApi32.WD_SendKey(this.rumbaInstance,keydata);
+    	Thread.sleep(1000);
+    	return 1;
+    	/* String Constants for SendKeys
+   ############# Key list ################
+      Meaning        Mnemonic  
+      PA1               @x
+      PA2               @y
+      PA3               @z
+      PA4               @+
+      ENTER             @E
+      CURSOR_DOWN       @V
+      CURSOR_UP         @U
+      PAGE_DOWN         @v
+      PAGE_UP           @u
+      @                  @@
+      Alt                @A
+      Alternate Cursor   @$
+      Attention          @A@Q
+      Backspace          @<
+      Backtab (Left Tab) @B
+      Clear              @C
+      Cmd Function Key   @A@Y
+      Cursor Down        @V
+      Cursor Left        @L
+      Cursor Right       @Z
+      Cursor Select      @A@J
+      Cursor Up          @U
+      Delete             @D
+      Dup                @S@x
+      End                @q
+      Enter              @E
+      Erase EOF          @F
+      Erase Input        @A@F
+      Field Exit         @A@E
+      Field Mark         @S@y
+      Field -            @A@-
+      Field +            @A@+
+      Help               @H
+      Hexadecimal        @A@X
+      Home               @0 (zero)
+      Insert             @I
+      Insert Toggle      @A@I
+      Host Print         @P
+      Left Tab(Back Tab) @B
+      New Line           @N
+      Page Up            @u
+      Page Down          @v
+      Print (PC)         @A@t
+      Record Backspace   @A@<
+      Reset              @R
+      Right Tab (Tab)    @T
+      Shift              @S
+      Sys Request        @A@H
+      Tab (Right Tab)    @T
+      Test               @A@C
+   PA1                @x
+   PA2                @y
+   PA3                @z
+   PA4                @+
+   PA5                @%
+   PA6                @&
+   PA7                @
+   PA8                @(
+   PA9                @)
+   PA10               @*
+   PF1/F1             @1
+   PF2/F2             @2
+   PF3/F3             @3
+   PF4/F4             @4
+   PF5/F5             @5
+   PF6/F6             @6
+   PF7/F7             @7
+   PF8/F8             @8
+   PF9/F9             @9
+   PF10/F10           @a
+   PF11/F11           @b
+   PF12/F12           @c
+   PF13               @d
+   PF14               @e
+   PF15               @f
+   PF16               @g
+   PF17               @h
+   PF18               @i
+   PF19               @j
+   PF20               @k
+   PF21               @l
+   PF22               @m
+   PF23               @n
+   PF24               @o
+*/
+    	
+    }
 }
