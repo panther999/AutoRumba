@@ -1,10 +1,7 @@
+package org.autorumba.main;
+import org.autorumba.operation.RumbaOperation;
 
-public class main {
-
-	/**
-	 * @param args
-	 */
-
+public class Main {
     public static void main(String[] args) throws InterruptedException {
         RumbaOperation rn = new RumbaOperation(1,"A");
         System.out.println(rn.ReadFromScreen(10, 1, 27));
