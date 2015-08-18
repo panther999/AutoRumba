@@ -77,8 +77,13 @@ public class RumbaOperation {
     public static final EhlApi32 EhlApi32 = (EhlApi32) Native.loadLibrary("EhlApi32", EhlApi32.class);   
     
 
+    public RumbaOperation(){
+    	 EhlApi32.WD_ConnectPS(1, "A");
+    }
     
-    
+    public void RumbaOperationClose(){
+   	 EhlApi32.WD_DisconnectPS(1);
+   }
 // ===============================================================
 
 //  Function : GetRow
@@ -166,49 +171,35 @@ public class RumbaOperation {
     
     
     
+   /* ===============================================================
+
+     Function : ReadFromScreen
+
+    ---------------------------------------------------------------
+
+     Purpose :Scrapes screen for text based on row, column, length*/
     
     
 
-     public static void main(String[] args) throws InterruptedException {
-         int process = 0; 
-         int status = 0; 
-         int intResult = 0;
-         byte[] buffer;
-         String strBuffer="";
+    public String ReadFromScreen(int nLength, int nScreenRow , int nScreenColumn) {
+    	byte[] buffer= new byte[nLength];
+        String strBuffer="";
+        int pos=0;
+        int intResult;
+        pos = (nScreenRow-1)*80+ nScreenColumn;
+    	intResult= EhlApi32.WD_CopyPSToString(1, pos, buffer, nLength);
+    	if (intResult==0){
+    		for (int i = 0; i< buffer.length;i++){
+            	strBuffer=strBuffer + (char)buffer[i];
+            }
+    		return strBuffer;
+    	}
+    	else{
+    		return "";
+    	}
+    }
+    
+    
+    
 
-         //process = kernel32.GetCurrentProcessId();
-         status = EhlApi32.WD_ConnectPS(1, "A");
-         System.out.println("Your status Status: " + status);
-         buffer= new byte[10];
-        intResult= EhlApi32.WD_CopyPSToString(1, 27, buffer, 10);
-        for (int i = 0; i< buffer.length;i++){
-        	strBuffer=strBuffer + (char)buffer[i];
-        }
-        
-        
-       System.out.println(strBuffer);
-        System.out.println("Your intResult Status: " + intResult); 
-         
-     /*   
-       intResult = EhlApi32.WD_SendKey(100,"menu"); 
-       intResult = EhlApi32.WD_SendKey(100, "@E");
-       Thread.sleep(1000);
-       intResult = EhlApi32.WD_CopyStringToField(100,447,"14");
-       intResult = EhlApi32.WD_SendKey(100, "@E");
-       Thread.sleep(1000);
-       intResult = EhlApi32.WD_CopyStringToField(100,202,"CIGFTOR");  
-       intResult = EhlApi32.WD_SendKey(100, "@E");*/
-       
-         	
-         
-        
-         
-         intResult = EhlApi32.WD_DisconnectPS(1);
-         System.out.println("Your intResult Status: " + intResult); 
-     }
-    /*  0  The function was successful  
-        1  An incorrect PSID was specified  
-        8  No prior call to Start Communication Notification (80) function was called for the PSID  
-        9  A system error was encountered  
-    */
 }
