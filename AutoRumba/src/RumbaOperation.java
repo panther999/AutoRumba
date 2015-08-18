@@ -17,6 +17,8 @@
 
 
 
+import java.util.Date;
+
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
@@ -152,13 +154,18 @@ public class RumbaOperation {
     	   nLoctionTest = ((nCursorRow - 1) * 80) + nCursorColumn;
 
     	   Thread.sleep(1000);
-//    	   do 
-//    	   
-//    	   {
-//    		   (nLoctionTest = nCursorLocation) Or DateDiff("s", dteStart, Now()) > nSeconds;
-    	       nReturnValue = EhlApi32.WD_QueryCursorLocation(rumbaInstance, nCursorLocation);
-//    	   }
-//    	   loop
+    	   int nSeconds=30000;
+    	   long timenow1= System.currentTimeMillis();
+    	   
+   	   do {
+   		long timenow2= System.currentTimeMillis();
+   		if ((timenow2-timenow1)==0){
+   			break;
+   		}
+   		nReturnValue = EhlApi32.WD_QueryCursorLocation(rumbaInstance, nCursorLocation);
+   	   }while(nLoctionTest != nCursorLocation);
+    	   
+    	   
 
     	   if (nLoctionTest == nCursorLocation){
 
@@ -219,9 +226,15 @@ public class RumbaOperation {
     
     public boolean WriteOnScreen(int nScreenRow , int nScreenColumn,String strValue) throws InterruptedException {
     	int pos=(nScreenRow-1)*80+ nScreenColumn;
+    	
+    	
+    		
+    	
+    	
     	int intResult= EhlApi32.WD_CopyStringToField(rumbaInstance,pos,strValue);
+    	
     	System.out.println("Write on screen: " + strValue + " at " + nScreenRow +","+ nScreenColumn +". Status : "    + intResult);
-    	Thread.sleep(1000);
+    	
     	if (intResult==0){
     		return true;
     	}
@@ -236,6 +249,8 @@ public class RumbaOperation {
     		
     		return false;
     	}
+    	
+    	
     }
     
 
@@ -354,5 +369,51 @@ public class RumbaOperation {
    PF24               @o
 */
     	
+    }
+    
+    /* ==================================================================
+     * Function : SearchStringInField
+     * 
+     * --------------------------------------------------
+     * Purpose : Search for the string on a particular field of an opened Rumba instance
+     */
+    
+    public int SearchStringInField(int nScreenRow , int nScreenColumn,String strValue){
+    	int slLocation=0;
+    	int pos=(nScreenRow-1)*80+ nScreenColumn;
+    	int intResult= EhlApi32.WD_SearchField(this.rumbaInstance,slLocation,pos,strValue);
+    	System.out.println(intResult);
+    	if (intResult==0){
+    		return slLocation;
+    	}
+    	else{
+    		System.out.println("Failed to find passed string ");
+    		return 0;
+    	}
+    }
+    
+    /* ==================================================================
+     * Function : FindFieldPosition
+     * 
+     * --------------------------------------------------
+     * Purpose : Search for the string on a particular field of an opened Rumba instance
+     */
+    public int FindFieldPosition(int nScreenRow , int nScreenColumn, String szCode){
+    	/*
+    	 * Content Description
+			^^ or T^ This field.
+			N^ Next field (protected or unprotected).
+			NP Next protected field.
+			NU Next unprotected field.
+			P^ Previous field (protected or unprotected)
+			PP Previous protected field.
+			PU Previous unprotected field.
+    	 */
+    	szCode="NU";
+    	int sLoc=0;
+    	int pos=(nScreenRow-1)*80+ nScreenColumn;
+    	int intResult= EhlApi32.WD_FindFieldPosition(this.rumbaInstance,sLoc,pos,szCode);
+    	
+    	return sLoc;
     }
 }
